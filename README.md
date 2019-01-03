@@ -1,1 +1,1 @@
-# ngrx-store-performance-
+# ngrx-store-performance
