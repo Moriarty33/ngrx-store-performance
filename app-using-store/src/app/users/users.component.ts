@@ -11,19 +11,7 @@ import { skip, take } from 'rxjs/operators';
 })
 export class UsersComponent implements OnInit, AfterViewChecked {
   public users$: Observable<any>;
-
-  public time = {
-    addUser: 0,
-    editUser: 0,
-    deleteUser: 0,
-    bulkAddUser: 0,
-    bulkEditUser: 0,
-    bulkDeleteUser: 0,
-    renderTime: 0
-  };
-  private startTime;
-  private endTime;
-  private renderTime;
+  public timer = new Timer();
 
   constructor(private store: Store<any>) { }
 
@@ -34,42 +22,65 @@ export class UsersComponent implements OnInit, AfterViewChecked {
 
   addUser(withoutTimer?) {
     if (!withoutTimer) {
-      this.startTimer();
-      this.users$.pipe(skip(1), take(1)).subscribe(() => this.time.addUser = this.endTimer());
+      this.timer.startTimer();
+      this.users$.pipe(skip(1), take(1)).subscribe(() => this.timer.dispatchEndTimer('addUser'));
     }
     this.store.dispatch(AddUser());
   }
 
   deleteUser(userId, withoutTimer?) {
     if (!withoutTimer) {
-      this.startTimer();
-      this.users$.pipe(skip(1), take(1)).subscribe(() => this.time.deleteUser = this.endTimer());
+      this.timer.startTimer();
+      this.users$.pipe(skip(1), take(1)).subscribe(() => this.timer.dispatchEndTimer('deleteUser'));
     }
     this.store.dispatch(DeleteUser(userId))
   }
 
   addOneHundredUsers() {
-    this.startTimer();
-    this.users$.pipe(skip(100), take(1)).subscribe(() => this.time.bulkAddUser = this.endTimer());
+    this.timer.startTimer();
+    this.users$.pipe(skip(100), take(1)).subscribe(() => this.timer.dispatchEndTimer('bulkAddUser'));
     this.users$.pipe(take(100)).subscribe(() => this.addUser(true));
   }
 
   deleteAllUsers() {
-    this.startTimer();
+    this.timer.startTimer();
     this.users$.pipe(take(1)).subscribe((users) => {
           this.users$.pipe(skip(users.length), take(1)).subscribe(() =>
-              this.time.bulkDeleteUser = this.endTimer());
+              this.timer.dispatchEndTimer('bulkDeleteUser'));
           this.users$.pipe(take(users.length)).subscribe((currentUsersList) =>
               this.deleteUser(currentUsersList[0]._id, true));
         }
     );
   }
 
+  ngAfterViewChecked(): void {
+    this.timer.renderTimer();
+    console.clear();
+    console.table(this.timer.time)
+  }
+
+}
+
+class Timer {
+  public time = {
+    addUser: 0,
+    editUser: 0,
+    deleteUser: 0,
+    bulkAddUser: 0,
+    bulkEditUser: 0,
+    bulkDeleteUser: 0,
+    renderTime: 0
+  };
+
+  private startTime;
+  private endTime;
+  private renderTime;
+
   startTimer() {
     this.startTime = new Date();
   }
 
-  endTimer() {
+  private endTimer() {
     this.endTime = new Date();
     var timeDiff = this.endTime - this.startTime; //in ms
     // strip the ms
@@ -79,16 +90,13 @@ export class UsersComponent implements OnInit, AfterViewChecked {
     return timeDiff;
   }
 
+  dispatchEndTimer(action) {
+    this.time[action] = this.endTimer();
+  }
+
   renderTimer() {
     this.renderTime = new Date();
     this.time.renderTime = this.renderTime - this.startTime; //in ms
     this.time.renderTime /= 1000;
   }
-
-  ngAfterViewChecked(): void {
-    this.renderTimer();
-    console.clear();
-    console.table(this.time)
-  }
-
 }
