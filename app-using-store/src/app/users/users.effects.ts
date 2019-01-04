@@ -2,11 +2,11 @@ import { Injectable } from '@angular/core';
 import { Actions, Effect, ofType } from '@ngrx/effects';
 import { Action, Store } from '@ngrx/store';
 import { AddUserSuccess, GetUsersSuccess, UsersActionTypes } from './users.actions';
-import { map, mergeMap, switchMap, take } from 'rxjs/operators';
+import { map, mergeMap, withLatestFrom } from 'rxjs/operators';
 import { UsersDaoService } from './users.dao.service';
 import { usersSelector } from './users.selectors';
 import { generateUser } from './users.helper';
-import { Observable, zip } from 'rxjs';
+import { Observable, of, zip } from 'rxjs';
 
 @Injectable()
 export class UsersEffects {
@@ -22,8 +22,9 @@ export class UsersEffects {
     @Effect()
     addUser$: Observable<Action> = this.actions$.pipe(
         ofType(UsersActionTypes.AddUser),
-        switchMap(() => zip(
-            this.store.select(usersSelector).pipe(take(1)),
+        withLatestFrom(this.store.select(usersSelector)),
+        mergeMap(([,users]) => zip(
+            of(users),
             this.usersDaoService.getUsers()
         )),
         map(([currentUsers, usersFromBackend]: any) => [
