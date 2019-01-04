@@ -9,3 +9,14 @@ export function generateUser(users) {
     user._id = uuid();
     return user;
 }
+
+export function modifyUser(user) {
+    return {
+        ...user,
+        age: user.age + 1,
+        name: {
+            ...user.name,
+            last: user.name.last + ' (edited)'
+        }
+    };
+}
