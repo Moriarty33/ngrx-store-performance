@@ -1,7 +1,7 @@
 import { AfterViewChecked, Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Store } from '@ngrx/store';
-import { AddUser, GetUsers } from './users.actions';
+import { AddUser, DeleteUser, GetUsers } from './users.actions';
 import { usersSelector } from './users.selectors';
 import { skip, take } from 'rxjs/operators';
 
@@ -40,11 +40,29 @@ export class UsersComponent implements OnInit, AfterViewChecked {
     this.store.dispatch(AddUser());
   }
 
+  deleteUser(userId, withoutTimer?) {
+    if (!withoutTimer) {
+      this.startTimer();
+      this.users$.pipe(skip(1), take(1)).subscribe(() => this.time.deleteUser = this.endTimer());
+    }
+    this.store.dispatch(DeleteUser(userId))
+  }
+
   addOneHundredUsers() {
     this.startTimer();
     this.users$.pipe(skip(100), take(1)).subscribe(() => this.time.bulkAddUser = this.endTimer());
-    this.users$.pipe(skip(1), take(99)).subscribe(() => this.store.dispatch(AddUser()));
-    this.store.dispatch(AddUser());
+    this.users$.pipe(take(100)).subscribe(() => this.addUser(true));
+  }
+
+  deleteAllUsers() {
+    this.startTimer();
+    this.users$.pipe(take(1)).subscribe((users) => {
+          this.users$.pipe(skip(users.length), take(1)).subscribe(() =>
+              this.time.bulkDeleteUser = this.endTimer());
+          this.users$.pipe(take(users.length)).subscribe((currentUsersList) =>
+              this.deleteUser(currentUsersList[0]._id, true));
+        }
+    );
   }
 
   startTimer() {

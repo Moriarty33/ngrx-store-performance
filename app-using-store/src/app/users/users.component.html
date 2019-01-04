@@ -1,9 +1,11 @@
 <button (click)="addUser()">Add user to list ( with backend )</button>
 <span style="width: 3rem; display: inline-block"></span>
 <button (click)="addOneHundredUsers()">Add one hundred users ( add per user ( with backend ) )</button>
+<button (click)="deleteAllUsers()">Delete all users (delete per user)</button>
 <hr>
 <div *ngFor="let user of users$ | async">
   <h3>{{user.name.first}} {{user.name.last}}</h3>
+  <button (click)="deleteUser(user._id)">Delete</button>
   <p>Age: {{user.age}}</p>
   <p>Email {{user.email}}</p>
   <p>About: {{user.about}}</p>
