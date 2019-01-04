@@ -128,5 +128,8 @@
       }
     }
   },
-  "defaultProject": "app-using-store"
+  "defaultProject": "app-using-store",
+  "cli": {
+    "defaultCollection": "@ngrx/schematics"
+  }
 }

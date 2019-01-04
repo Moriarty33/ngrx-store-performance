@@ -57,20 +57,18 @@ export class UsersComponent implements OnInit, AfterViewChecked {
     addOneHundredUsers() {
         this.startTimer();
         this.users$.pipe(skip(100), take(1)).subscribe(() => this.time.bulkAddUser = this.endTimer());
-        let i;
-        for (i = 0; i < 100; i++) {
-            this.addUser(true);
-        }
+        this.users$.pipe(take(100)).subscribe(() => this.addUser(true));
     }
 
     deleteAllUsers() {
         this.startTimer();
-        this.users$.pipe(take(1)).subscribe((users) =>
-            this.users$.pipe(skip(users.length), take(1))
-                .subscribe(() => this.time.bulkDeleteUser = this.endTimer()));
-
-        this.users$.pipe(take(1)).subscribe((users: any[]) =>
-            users.forEach(user => this.deleteUser(user._id, true)))
+        this.users$.pipe(take(1)).subscribe((users) => {
+                this.users$.pipe(skip(users.length), take(1)).subscribe(() =>
+                    this.time.bulkDeleteUser = this.endTimer());
+                this.users$.pipe(take(users.length)).subscribe((currentUsersList) =>
+                    this.deleteUser(currentUsersList[0]._id, true));
+            }
+        );
     }
 
     editAllUsers() {
