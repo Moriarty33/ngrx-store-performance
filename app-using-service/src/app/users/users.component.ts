@@ -73,25 +73,56 @@ export class UsersComponent implements OnInit, AfterViewChecked {
     ngAfterViewChecked(): void {
         this.timer.renderTimer();
         console.clear();
-        console.table(this.timer.time)
+        console.table(this.timer.time, ['stringValues', 'callCount', 'avg']);
     }
 }
 
 
 class Timer {
     public time = {
-        addUser: 0,
-        editUser: 0,
-        deleteUser: 0,
-        bulkAddUser: 0,
-        bulkEditUser: 0,
-        bulkDeleteUser: 0,
+        addUser: {
+            values: [],
+            avg: 0,
+            callCount: 0,
+            stringValues: ''
+        },
+        editUser: {
+            values: [],
+            avg: 0,
+            callCount: 0,
+            stringValues: ''
+        },
+        deleteUser: {
+            values: [],
+            avg: 0,
+            callCount: 0,
+            stringValues: ''
+        },
+        bulkAddUser: {
+            values: [],
+            avg: 0,
+            callCount: 0,
+            stringValues: ''
+        },
+        bulkEditUser: {
+            values: [],
+            avg: 0,
+            callCount: 0,
+            stringValues: ''
+        },
+        bulkDeleteUser: {
+            values: [],
+            avg: 0,
+            callCount: 0,
+            stringValues: ''
+        },
         renderTime: 0
     };
 
     private startTime;
     private endTime;
     private renderTime;
+    private average = arr => arr.reduce( ( p, c ) => p + c, 0 ) / arr.length;
 
     startTimer() {
         this.startTime = new Date();
@@ -108,7 +139,10 @@ class Timer {
     }
 
     dispatchEndTimer(action) {
-        this.time[action] = this.endTimer();
+        this.time[action].values.push(this.endTimer());
+        this.time[action].avg = this.average(this.time[action].values);
+        this.time[action].callCount = this.time[action].callCount+1;
+        this.time[action].stringValues = this.time[action].values.join(', ');
     }
 
     renderTimer() {
